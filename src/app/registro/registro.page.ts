@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import {
   IonHeader,
   IonToolbar,
@@ -44,9 +45,9 @@ function fechaNoFutura(control: AbstractControl): ValidationErrors | null {
 }
 
 @Component({
-  selector: 'app-home',
-  templateUrl: 'home.page.html',
-  styleUrls: ['home.page.scss'],
+  selector: 'app-registro',
+  templateUrl: 'registro.page.html',
+  styleUrls: ['registro.page.scss'],
   standalone: true,
   imports: [
     CommonModule,
@@ -63,7 +64,7 @@ function fechaNoFutura(control: AbstractControl): ValidationErrors | null {
     IonSpinner,
   ],
 })
-export class HomePage {
+export class RegistroPage {
   public registroForm: FormGroup;
   public isSubmitting = signal<boolean>(false);
   public darkMode = signal<boolean>(false);
@@ -121,6 +122,15 @@ export class HomePage {
     await toast.present();
   }
 
+  // Cifra la contraseña con SHA-256 (Web Crypto API) y la devuelve en hexadecimal
+  private async cifrarPassword(password: string): Promise<string> {
+    const datos = new TextEncoder().encode(password);
+    const hash = await crypto.subtle.digest('SHA-256', datos);
+    return Array.from(new Uint8Array(hash))
+      .map((byte) => byte.toString(16).padStart(2, '0'))
+      .join('');
+  }
+
   public async onSubmit(): Promise<void> {
     if (this.registroForm.invalid) {
       this.registroForm.markAllAsTouched();
@@ -129,15 +139,17 @@ export class HomePage {
 
     this.isSubmitting.set(true);
     try {
-      const formData = this.registroForm.value;
-      console.log('Payload a enviar a la API REST:', formData);
+      const { password, ...resto } = this.registroForm.value;
+      const payload = { ...resto, password: await this.cifrarPassword(password) };
+
+      console.log('Payload a enviar a la API REST:', payload);
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       // Guardamos una copia (sin la contraseña) antes de resetear el formulario
       this.ultimoEnvio.set({
-        nombre: formData.nombre,
-        email: formData.email,
-        fechaNacimiento: formData.fechaNacimiento,
+        nombre: payload.nombre,
+        email: payload.email,
+        fechaNacimiento: payload.fechaNacimiento,
         enviadoEl: new Date().toLocaleString('es-ES'),
       });
 
@@ -155,7 +167,6 @@ export class HomePage {
     const datos = this.ultimoEnvio();
     if (!datos) return;
 
-    // Import dinámico: la librería solo se carga al pulsar el botón
     const { jsPDF } = await import('jspdf');
     const doc = new jsPDF();
 

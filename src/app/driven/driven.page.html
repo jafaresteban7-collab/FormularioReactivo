@@ -1,0 +1,78 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Template-driven</ion-title>
+    <ion-buttons slot="end">
+      <ion-button routerLink="/registro">Reactivo</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="contenedor">
+    <form #f="ngForm" (ngSubmit)="onSubmit(f)">
+      <ion-list lines="full">
+        <ion-item>
+          <ion-input
+            label="Nombre completo"
+            labelPlacement="floating"
+            type="text"
+            name="nombre"
+            [(ngModel)]="model.nombre"
+            required
+            minlength="3"
+            errorText="El nombre es obligatorio (mín. 3 caracteres).">
+          </ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-input
+            label="Correo Electrónico"
+            labelPlacement="floating"
+            type="email"
+            inputmode="email"
+            name="email"
+            [(ngModel)]="model.email"
+            required
+            email
+            errorText="Introduzca un email válido.">
+          </ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-input
+            label="Fecha de nacimiento"
+            labelPlacement="stacked"
+            type="date"
+            name="fechaNacimiento"
+            [(ngModel)]="model.fechaNacimiento"
+            #fecha="ngModel"
+            required
+            fechaNoFutura
+            [max]="hoy"
+            [errorText]="errorFecha(fecha)">
+          </ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-input
+            label="Contraseña"
+            labelPlacement="floating"
+            type="password"
+            name="password"
+            [(ngModel)]="model.password"
+            required
+            pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$"
+            errorText="Mínimo 8 caracteres, letras y números.">
+          </ion-input>
+        </ion-item>
+      </ion-list>
+
+      <div class="ion-padding-top">
+        <ion-button expand="block" type="submit" [disabled]="f.invalid || isSubmitting()">
+          <span *ngIf="!isSubmitting()">Registrarse</span>
+          <ion-spinner name="crescent" *ngIf="isSubmitting()"></ion-spinner>
+        </ion-button>
+      </div>
+    </form>
+  </div>
+</ion-content>
